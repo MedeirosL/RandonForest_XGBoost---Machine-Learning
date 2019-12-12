@@ -31,7 +31,7 @@ plt.xticks(rotation='vertical');'''
 
 label_df = brainwave_df['label']
 brainwave_df.drop('label', axis = 1, inplace=True)
-brainwave_df.head()
+#brainwave_df.head()
 
 '''pl_random_forest = Pipeline(steps=[('random_forest', RandomForestClassifier())])
 scores = cross_val_score(pl_random_forest, brainwave_df, label_df, cv=10,scoring='accuracy')
@@ -57,7 +57,7 @@ plt.ylabel('Principal Component 2', fontsize=16)
 plt.xlabel('Principal Component 1', fontsize=16)
 plt.xticks(rotation='vertical');'''
 
-pl_xgb = Pipeline(steps=
+'''pl_xgb = Pipeline(steps=
                   [('xgboost', xgb.XGBClassifier(objective='multi:softmax'))])
 scores = cross_val_score(pl_xgb, brainwave_df, label_df, cv=10)
-print('Accuracy for XGBoost Classifier : ', scores.mean())
+print('Accuracy for XGBoost Classifier : ', scores.mean())'''

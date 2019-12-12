@@ -4,7 +4,7 @@ Created on Thu Dec 12 11:04:28 2019
 
 @author: User
 """
-
+import pandas as pd
 import numpy as np
 from scipy.stats import uniform, randint
 from sklearn.datasets import load_breast_cancer, load_diabetes, load_wine
@@ -13,6 +13,8 @@ from sklearn.model_selection import cross_val_score, GridSearchCV, KFold, Random
 import xgboost as xgb
 import os
 import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 import graphviz
 
 os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
@@ -49,10 +51,23 @@ def report_best_params(xgb_model):
     
 '''------------------------------------------------------------------'''
 
-wine = load_wine()
+X = pd.read_csv('emotions.csv', index_col=False)
+
+plt.figure(figsize=(12,5))
+sns.countplot(x=X.label, color='mediumseagreen')
+plt.title('Emotional sentiment class distribution', fontsize=16)
+plt.ylabel('Class Counts', fontsize=16)
+plt.xlabel('Class Label', fontsize=16)
+plt.xticks(rotation='vertical');
+
+
+y = X['label']
+X.drop('label', axis = 1, inplace=True)
+
+'''wine = load_wine()
 
 X = wine.data
-y = wine.target
+y = wine.target'''
 
 kfold = KFold(n_splits=4, shuffle=True, random_state=42)
 
@@ -65,7 +80,7 @@ report_best_params(xgb_model)
 
 '''-----------------------------------------------------------------'''
 
-for train_index, test_index in kfold.split(X):   
+'''for train_index, test_index in kfold.split(X):   
     X_train, X_test = X[train_index], X[test_index]
     y_train, y_test = y[train_index], y[test_index]
 
@@ -77,14 +92,15 @@ for train_index, test_index in kfold.split(X):
     
     accuracy_score(y_test, y_pred)
 
-print("best score: {0}, best iteration: {1}, best ntree limit {2}".format(xgb_model.best_score, xgb_model.best_iteration, xgb_model.best_ntree_limit))
+print("best score: {0}, best iteration: {1}, best ntree limit {2}".format(xgb_model.best_score, xgb_model.best_iteration, xgb_model.best_ntree_limit))'''
 
-'''for train_index, test_index in kfold.split(X):   
+for train_index, test_index in kfold.split(X):   
     X_train, X_test = X[train_index], X[test_index]
     y_train, y_test = y[train_index], y[test_index]
     
-    xgb_model = xgb.XGBClassifier(objective="multi:softprob", colsample_bytree= 0.7409, gamma=0.007272 , 
-    random_state=42, max_depth=3, n_estimators = 117, subsample=0.75689)
+    #xgb_model = xgb.XGBClassifier(objective="multi:softprob", colsample_bytree= 0.7409, gamma=0.007272 , 
+    #random_state=42, max_depth=3, n_estimators = 117, subsample=0.75689)
+    xgb_model = xgb.XGBClassifier(objective="multi:softprob",random_state=42)
     xgb_model.fit(X_train, y_train)
     
     y_pred = xgb_model.predict(X_test)
@@ -92,7 +108,7 @@ print("best score: {0}, best iteration: {1}, best ntree limit {2}".format(xgb_mo
     scores.append(mean_squared_error(y_test, y_pred))
     print(confusion_matrix(y_test, y_pred))
     print("\n")
-display_scores(np.sqrt(scores))'''
+display_scores(np.sqrt(scores))
 
 xgb.plot_importance(xgb_model)
 xgb.plot_tree(xgb_model, num_trees=xgb_model.best_iteration)#fig = matplotlib.pyplot.gcf()
@@ -101,3 +117,4 @@ fig.set_size_inches(150, 100)
 fig.savefig('tree.png')
 # converts the target tree to a graphviz instance
 xgb.to_graphviz(xgb_model, num_trees=xgb_model.best_iteration)
+
