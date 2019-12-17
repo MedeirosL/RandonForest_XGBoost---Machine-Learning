@@ -69,14 +69,14 @@ def report_best_params(xgb_model):
 X = pd.read_csv('dataset_new.csv', index_col=False)
 
 plt.figure(figsize=(12,5))
-sns.countplot(x=X.H_Win, color='mediumseagreen')
-plt.title('Mais de 2.5 Gols na partida', fontsize=16)
+sns.countplot(x=X.HAD, color='mediumseagreen')
+plt.title('Resultados', fontsize=16)
 plt.ylabel('Número', fontsize=16)
-plt.xlabel('Não/Sim', fontsize=16)
+plt.xlabel('Casa/Empate/Visitante', fontsize=16)
 plt.xticks(rotation='vertical');
 
 
-y = X['O25']
+y = X['A_Win']
 X.drop('HAD', axis = 1, inplace=True)
 X.drop('H_Win', axis = 1, inplace=True)
 X.drop('A_Win', axis = 1, inplace=True)
@@ -119,8 +119,8 @@ for train_index, test_index in kfold.split(X):
     #xgb_model = xgb.XGBClassifier(objective="multi:softprob"",  colsample_bytree= 0.7779849, gamma=0.2266204, learning_rate = 0.0396947,random_state=42, max_depth=2, n_estimators = 132, subsample=0.7644826)
     
     ''' Home Win Model '''
-    #xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree= 0.994356416, gamma=0.76995783, learning_rate = 0.10553468,
-    #random_state=42, max_depth=3, n_estimators = 52, subsample=0.8601756619)
+    xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree= 0.994356416, gamma=0.76995783, learning_rate = 0.10553468,
+    random_state=42, max_depth=3, n_estimators = 52, subsample=0.8601756619)
     
     ''' Away Win Model '''
     #xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree= 0.80273439, gamma=0.060287248, learning_rate =  0.237514319,
@@ -131,8 +131,12 @@ for train_index, test_index in kfold.split(X):
     #random_state=42, max_depth=8, n_estimators = 72, subsample=0.933768250)
     
     '''Over 2.5'''
-    xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree=  0.92558007789, gamma=0.06540722555, learning_rate =  0.292073587232,
-    random_state=42, max_depth=14, n_estimators = 130, subsample=0.8553755296)
+    #xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree=  0.92558007789, gamma=0.06540722555, learning_rate =  0.292073587232,
+    #random_state=42, max_depth=14, n_estimators = 130, subsample=0.8553755296)
+    
+    ''' Home/Draw/Away'''
+    '''xgb_model = xgb.XGBClassifier(objective="multi:softprob", colsample_bytree= 0.7779849, gamma=0.2266204, learning_rate = 0.0396947,
+    random_state=42, max_depth=2, n_estimators = 132, subsample=0.7644826)'''
     
     
     xgb_model.fit(X_train, y_train, early_stopping_rounds=5, eval_set=[(X_test, y_test)])
@@ -149,8 +153,8 @@ for train_index, test_index in kfold.split(X):
 
     #objective="binary:logistic"   objective="multi:softprob"
     ''' Home Wins Model '''
-    #xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree= 0.994356416, gamma=0.76995783, learning_rate = 0.10553468,
-    #random_state=42, max_depth=3, n_estimators = 52, subsample=0.8601756619)    
+    xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree= 0.994356416, gamma=0.76995783, learning_rate = 0.10553468,
+    random_state=42, max_depth=3, n_estimators = 52, subsample=0.8601756619)    
     
     ''' Away Win Model '''
     #xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree= 0.80273439, gamma=0.060287248, learning_rate =  0.237514319,
@@ -164,9 +168,9 @@ for train_index, test_index in kfold.split(X):
     #xgb_model = xgb.XGBClassifier(objective="binary:logistic", colsample_bytree= 0.8647980122, gamma=0.0695400119, learning_rate = 0.219972232,
     #random_state=42, max_depth=2, n_estimators = 72, subsample=0.96962561909)
     
-    
-    #xgb_model = xgb.XGBClassifier(objective="multi:softprob", colsample_bytree= 0.7779849, gamma=0.2266204, learning_rate = 0.0396947,
-    #random_state=42, max_depth=2, n_estimators = 132, subsample=0.7644826)
+    ''' Home/Draw/Away'''
+    '''xgb_model = xgb.XGBClassifier(objective="multi:softprob", colsample_bytree= 0.7779849, gamma=0.2266204, learning_rate = 0.0396947,
+    random_state=42, max_depth=2, n_estimators = 132, subsample=0.7644826)'''
     
     #xgb_model = xgb.XGBClassifier(objective="multi:softprob",random_state=42)
     xgb_model.fit(X_train, y_train)

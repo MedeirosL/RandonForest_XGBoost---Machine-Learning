@@ -11,7 +11,6 @@ from random import randrange
 from csv import reader
 from math import sqrt
 
-# Load a CSV file
 def load_csv(filename):
 	dataset = list()
 	with open(filename, 'r') as file:
@@ -22,24 +21,9 @@ def load_csv(filename):
 			dataset.append(row)
 	return dataset
 
-# Convert string column to float
-def str_column_to_float(dataset, column):
-	for row in dataset:
-		row[column] = float(row[column].strip())
 
-# Convert string column to integer
-def str_column_to_int(dataset, column):
-	class_values = [row[column] for row in dataset]
-	unique = set(class_values)
-	lookup = dict()
-	for i, value in enumerate(unique):
-		lookup[value] = i
-	for row in dataset:
-		row[column] = lookup[row[column]]
-	return lookup
-
-# Split a dataset into k folds
-def cross_validation_split(dataset, n_folds):
+# Separa o dataset para o método de validação cruzada "k-fold"
+def crossValidationSplit(dataset, n_folds):
 	dataset_split = list()
 	dataset_copy = list(dataset)
 	fold_size = int(len(dataset) / n_folds)
@@ -51,17 +35,17 @@ def cross_validation_split(dataset, n_folds):
 		dataset_split.append(fold)
 	return dataset_split
 
-# Calculate accuracy percentage
-def accuracy_metric(actual, predicted):
+# Calcula a porcentagem da acurácia/precisão
+def accuracyMetric(actual, predicted):
 	correct = 0
 	for i in range(len(actual)):
 		if actual[i] == predicted[i]:
 			correct += 1
 	return correct / float(len(actual)) * 100.0
 
-# Evaluate an algorithm using a cross validation split
-def evaluate_algorithm(dataset, algorithm, n_folds, *args):
-    folds = cross_validation_split(dataset, n_folds)
+# Avalia o algorítmo através do método de validação cruzada acima.
+def evaluateAlgorithm(dataset, algorithm, n_folds, *args):
+    folds = crossValidationSplit(dataset, n_folds)
     scores = list()
     for fold in folds:
         train_set = list(folds)
@@ -75,12 +59,12 @@ def evaluate_algorithm(dataset, algorithm, n_folds, *args):
         predicted = algorithm(train_set, test_set, *args)
         print("pred:",predicted)
         actual = [row[-1] for row in fold]
-        accuracy = accuracy_metric(actual, predicted)
+        accuracy = accuracyMetric(actual, predicted)
         scores.append(accuracy)
     return scores
 
-# Split a dataset based on an attribute and an attribute value
-def test_split(index, value, dataset):
+# Separa o dataset de testes em "parâmetros" e "resultado".
+def testSplit(index, value, dataset):
 	left, right = list(), list()
 	for row in dataset:
 		if row[index] < value:
@@ -89,8 +73,8 @@ def test_split(index, value, dataset):
 			right.append(row)
 	return left, right
 
-# Calculate the Gini index for a split dataset
-def gini_index(groups, classes):
+# Calcula o index para o split pelo método de gini.
+def giniIndex(groups, classes):
 	# count all samples at split point
 	n_instances = float(sum([len(group) for group in groups]))
 	# sum weighted Gini index for each group
@@ -109,8 +93,8 @@ def gini_index(groups, classes):
 		gini += (1.0 - score) * (size / n_instances)
 	return gini
 
-# Select the best split point for a dataset
-def get_split(dataset, n_features):
+# Retorna as posições de split utilizando o método acima
+def getSplit(dataset, n_features):
 	class_values = list(set(row[-1] for row in dataset))
 	b_index, b_value, b_score, b_groups = 999, 999, 999, None
 	features = list()
@@ -120,49 +104,48 @@ def get_split(dataset, n_features):
 			features.append(index)
 	for index in features:
 		for row in dataset:
-			groups = test_split(index, row[index], dataset)
-			gini = gini_index(groups, class_values)
+			groups = testSplit(index, row[index], dataset)
+			gini = giniIndex(groups, class_values)
 			if gini < b_score:
 				b_index, b_value, b_score, b_groups = index, row[index], gini, groups
 	return {'index':b_index, 'value':b_value, 'groups':b_groups}
 
-# Create a terminal node value
-def to_terminal(group):
+# Retorna o nó terminal
+def toTerminal(group):
 	outcomes = [row[-1] for row in group]
 	return max(set(outcomes), key=outcomes.count)
 
-# Create child splits for a node or make terminal
 def split(node, max_depth, min_size, n_features, depth):
 	left, right = node['groups']
 	del(node['groups'])
 	# check for a no split
 	if not left or not right:
-		node['left'] = node['right'] = to_terminal(left + right)
+		node['left'] = node['right'] = toTerminal(left + right)
 		return
 	# check for max depth
 	if depth >= max_depth:
-		node['left'], node['right'] = to_terminal(left), to_terminal(right)
+		node['left'], node['right'] = toTerminal(left), toTerminal(right)
 		return
 	# process left child
 	if len(left) <= min_size:
-		node['left'] = to_terminal(left)
+		node['left'] = toTerminal(left)
 	else:
-		node['left'] = get_split(left, n_features)
+		node['left'] = getSplit(left, n_features)
 		split(node['left'], max_depth, min_size, n_features, depth+1)
 	# process right child
 	if len(right) <= min_size:
-		node['right'] = to_terminal(right)
+		node['right'] = toTerminal(right)
 	else:
-		node['right'] = get_split(right, n_features)
+		node['right'] = getSplit(right, n_features)
 		split(node['right'], max_depth, min_size, n_features, depth+1)
 
-# Build a decision tree
-def build_tree(train, max_depth, min_size, n_features):
-	root = get_split(train, n_features)
+# Constrói a Arvore de Decisão
+def buildTree(train, max_depth, min_size, n_features):
+	root = getSplit(train, n_features)
 	split(root, max_depth, min_size, n_features, 1)
 	return root
 
-# Make a prediction with a decision tree
+# Realiza uma predição através da árvore e retorna o nó
 def predict(node, row):
 	if row[node['index']] < node['value']:
 		if isinstance(node['left'], dict):
@@ -175,7 +158,7 @@ def predict(node, row):
 		else:
 			return node['right']
 
-# Create a random subsample from the dataset with replacement
+
 def subsample(dataset, ratio):
 	sample = list()
 	n_sample = round(len(dataset) * ratio)
@@ -184,19 +167,19 @@ def subsample(dataset, ratio):
 		sample.append(dataset[index])
 	return sample
 
-# Make a prediction with a list of bagged trees
-def bagging_predict(trees, row):
+# Faz uma predição pelo método de bagging e retona a mesma
+def baggingPredict(trees, row):
 	predictions = [predict(tree, row) for tree in trees]
 	return max(set(predictions), key=predictions.count)
 
-# Random Forest Algorithm
-def random_forest(train, test, max_depth, min_size, sample_size, n_trees, n_features):
+# Algoritmo da floresta, de acordo com as funções acima.
+def randomForest(train, test, max_depth, min_size, sample_size, n_trees, n_features):
 	trees = list()
 	for i in range(n_trees):
 		sample = subsample(train, sample_size)
-		tree = build_tree(sample, max_depth, min_size, n_features)
+		tree = buildTree(sample, max_depth, min_size, n_features)
 		trees.append(tree)
-	predictions = [bagging_predict(trees, row) for row in test]
+	predictions = [baggingPredict(trees, row) for row in test]
 	return(predictions)
 
 # Test the random forest algorithm
@@ -206,8 +189,8 @@ filename = 'dataset3_rf.csv'
 dataset = load_csv(filename)
 # convert string attributes to integers
 
-# convert class column to integers
-str_column_to_int(dataset, len(dataset[0])-1)
+# convert class n to integers
+#str_column_to_int(dataset, len(dataset[0])-1)
 best_mean=0
 best_params = []
 
@@ -221,7 +204,7 @@ for sample_size in [1.25]:
     for min_size in [1]:
         for max_depth in [3]:
             for n_trees in [10]:
-                scores = evaluate_algorithm(dataset, random_forest, n_folds, max_depth, min_size, sample_size, n_trees, n_features)
+                scores = evaluateAlgorithm(dataset, randomForest, n_folds, max_depth, min_size, sample_size, n_trees, n_features)
                 if sum(scores)/float(len(scores)) > best_mean:
                     best_params = [sample_size, min_size, max_depth, n_trees]
                     best_mean = sum(scores)/float(len(scores))
